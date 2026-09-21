@@ -1,0 +1,42 @@
+# ==============================
+# FastAPI
+# ==============================
+fastapi
+uvicorn[standard]
+
+# ==============================
+# Database
+# ==============================
+sqlalchemy
+psycopg2-binary
+alembic
+
+# ==============================
+# Configuration / Environment
+# ==============================
+pydantic
+pydantic-settings
+python-dotenv
+
+# ==============================
+# Authentication / Security
+# ==============================
+PyJWT
+passlib[bcrypt]
+email-validator
+
+# ==============================
+# File Uploads
+# ==============================
+python-multipart
+
+# ==============================
+# Cloudinary
+# ==============================
+cloudinary==1.46.2
+
+# ==============================
+# Testing
+# ==============================
+pytest
+httpx2
