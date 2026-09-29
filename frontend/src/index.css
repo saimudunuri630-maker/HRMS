@@ -1,7 +1,20 @@
-* {
+/* ============================================================
+   MEDIATIZE HRMS - GLOBAL CALIBRI (BODY) TYPOGRAPHY & RESET
+   ============================================================ */
+
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+:root {
+  --font-primary: "Calibri", "Calibri Body", sans-serif;
+  --hr-topbar-height: 72px;
+  --hr-sidebar-width: 250px;
+  --hr-sidebar-collapsed-width: 72px;
 }
 
 html,
@@ -9,8 +22,38 @@ body,
 #root {
   width: 100%;
   min-height: 100%;
+  font-family: "Calibri", "Calibri Body", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   margin: 0;
+  font-family: "Calibri", "Calibri Body", sans-serif;
+  color: #1e293b;
+  background-color: #f8fafc;
+}
+
+/* Ensure all interactive controls, form elements, buttons, tables, and typography inherit and strictly use Calibri (Body) */
+button,
+input,
+textarea,
+select,
+optgroup,
+label,
+table,
+th,
+td,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+a,
+li,
+div {
+  font-family: "Calibri", "Calibri Body", sans-serif;
 }

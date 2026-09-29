@@ -1,618 +1,258 @@
-import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import "../styles/VerifyOTP.css";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { ShieldCheck, RotateCw, AlertCircle, ArrowLeft, Loader2 } from "lucide-react";
+import { authService } from "../services/api";
+import "../styles/Login.css";
 
-const API_URL = "http://localhost:8000";
-
-function VerifyOTP() {
-  const navigate = useNavigate();
-
-  const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState([
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-  ]);
-
-  const [loading, setLoading] = useState(false);
+export default function VerifyOTP() {
+  const [otpValues, setOtpValues] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(45);
+  const [email, setEmail] = useState("");
 
-  const [countdown, setCountdown] = useState(60);
-
-  const inputRefs = useRef([]);
-
-
-  /* =====================================================
-     GET EMAIL
-  ===================================================== */
+  const otpInputRefs = useRef([]);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    const savedEmail =
-      sessionStorage.getItem("hrms_login_email");
-
+    const savedEmail = location.state?.email || localStorage.getItem("auth_email");
     if (!savedEmail) {
-      navigate("/login", {
-        replace: true,
-      });
-
-      return;
+      navigate("/login", { replace: true });
+    } else {
+      setEmail(savedEmail);
     }
-
-    setEmail(savedEmail);
-
-    inputRefs.current[0]?.focus();
-  }, [navigate]);
-
-
-  /* =====================================================
-     COUNTDOWN
-  ===================================================== */
+  }, [location, navigate]);
 
   useEffect(() => {
-    if (countdown <= 0) {
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setCountdown((previous) =>
-        previous - 1
-      );
-    }, 1000);
-
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => setResendCooldown((p) => p - 1), 1000);
     return () => clearInterval(timer);
-  }, [countdown]);
+  }, [resendCooldown]);
 
+  // Focus first cell on mount
+  useEffect(() => {
+    if (otpInputRefs.current[0]) {
+      setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
+    }
+  }, []);
 
-  /* =====================================================
-     OTP INPUT
-  ===================================================== */
+  const handleOtpPaste = (e) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData?.getData("text") || "";
+    const cleanDigits = pasteData.replace(/\D/g, "").slice(0, 6);
+    if (!cleanDigits) return;
 
-  const handleOtpChange = (
-    index,
-    value
-  ) => {
-    if (!/^\d?$/.test(value)) {
+    const newArr = [...otpValues];
+    for (let i = 0; i < 6; i++) {
+      newArr[i] = cleanDigits[i] || "";
+    }
+    setOtpValues(newArr);
+
+    const focusIdx = Math.min(cleanDigits.length, 5);
+    otpInputRefs.current[focusIdx]?.focus();
+  };
+
+  const handleOtpChange = (index, value) => {
+    const cleanDigits = value.replace(/\D/g, "");
+
+    if (!cleanDigits) {
+      const newArr = [...otpValues];
+      newArr[index] = "";
+      setOtpValues(newArr);
       return;
     }
 
-    const newOtp = [...otp];
-
-    newOtp[index] = value;
-
-    setOtp(newOtp);
-
-    setError("");
-
-    if (
-      value &&
-      index < 5
-    ) {
-      inputRefs.current[
-        index + 1
-      ]?.focus();
-    }
-  };
-
-
-  /* =====================================================
-     BACKSPACE
-  ===================================================== */
-
-  const handleKeyDown = (
-    index,
-    event
-  ) => {
-
-    if (
-      event.key === "Backspace" &&
-      !otp[index] &&
-      index > 0
-    ) {
-      inputRefs.current[
-        index - 1
-      ]?.focus();
-    }
-  };
-
-
-  /* =====================================================
-     PASTE OTP
-  ===================================================== */
-
-  const handlePaste = (event) => {
-    event.preventDefault();
-
-    const pastedData =
-      event.clipboardData
-        .getData("text")
-        .replace(/\D/g, "")
-        .slice(0, 6);
-
-    if (!pastedData) {
+    if (cleanDigits.length > 1) {
+      const newArr = [...otpValues];
+      for (let i = 0; i < cleanDigits.length && index + i < 6; i++) {
+        newArr[index + i] = cleanDigits[i];
+      }
+      setOtpValues(newArr);
+      const nextIdx = Math.min(index + cleanDigits.length, 5);
+      otpInputRefs.current[nextIdx]?.focus();
       return;
     }
 
-    const newOtp = [
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-    ];
+    const newArr = [...otpValues];
+    newArr[index] = cleanDigits.slice(-1);
+    setOtpValues(newArr);
 
-    pastedData
-      .split("")
-      .forEach((digit, index) => {
-        newOtp[index] = digit;
-      });
-
-    setOtp(newOtp);
-
-    const nextIndex =
-      Math.min(
-        pastedData.length,
-        5
-      );
-
-    inputRefs.current[
-      nextIndex
-    ]?.focus();
+    if (index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
   };
 
-
-  /* =====================================================
-     VERIFY OTP
-  ===================================================== */
-
-  const handleVerifyOTP = async (
-    event
-  ) => {
-    event.preventDefault();
-
-    setError("");
-
-    const enteredOTP =
-      otp.join("");
-
-    if (
-      enteredOTP.length !== 6
-    ) {
-      setError(
-        "Please enter the complete 6-digit OTP."
-      );
-
-      return;
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === "Backspace") {
+      if (!otpValues[index] && index > 0) {
+        const newArr = [...otpValues];
+        newArr[index - 1] = "";
+        setOtpValues(newArr);
+        otpInputRefs.current[index - 1]?.focus();
+      } else {
+        const newArr = [...otpValues];
+        newArr[index] = "";
+        setOtpValues(newArr);
+      }
+    } else if (e.key === "ArrowLeft" && index > 0) {
+      e.preventDefault();
+      otpInputRefs.current[index - 1]?.focus();
+    } else if (e.key === "ArrowRight" && index < 5) {
+      e.preventDefault();
+      otpInputRefs.current[index + 1]?.focus();
     }
+  };
 
-    if (!email) {
-      setError(
-        "Email session expired. Please login again."
-      );
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    const cleanOtp = otpValues.join("").trim();
 
+    if (cleanOtp.length < 6) {
+      setError("Please input the complete 6-digit verification code.");
       return;
     }
 
     setLoading(true);
+    setError("");
 
     try {
+      const data = await authService.verifyOtpCode(email, cleanOtp);
+      const user = data.user;
+      const role = String(user?.role || "").toLowerCase();
 
-      const response =
-        await fetch(
-          `${API_URL}/api/auth/verify-otp`,
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
-
-            body: JSON.stringify({
-              email,
-              otp: enteredOTP,
-            }),
-          }
-        );
-
-
-      const data =
-        await response.json();
-
-
-      if (!response.ok) {
-        throw new Error(
-          data.detail ||
-          "Invalid OTP."
-        );
+      if (role === "hr") {
+        navigate("/hr/dashboard", { replace: true });
+      } else {
+        navigate("/employee/dashboard", { replace: true });
       }
-
-
-      /* ================================================
-         SAVE AUTH TOKEN
-      ================================================ */
-
-      localStorage.setItem(
-        "hrms_access_token",
-        data.access_token
-      );
-
-
-      localStorage.setItem(
-        "hrms_token_type",
-        data.token_type || "bearer"
-      );
-
-
-      /* ================================================
-         CLEAR LOGIN EMAIL
-      ================================================ */
-
-      sessionStorage.removeItem(
-        "hrms_login_email"
-      );
-
-
-      /* ================================================
-         DECODE JWT ROLE
-      ================================================ */
-
-      try {
-
-        const tokenParts =
-          data.access_token.split(".");
-
-        const payload =
-          JSON.parse(
-            atob(
-              tokenParts[1]
-                .replace(/-/g, "+")
-                .replace(/_/g, "/")
-            )
-          );
-
-
-        const role =
-          payload.role;
-
-
-        if (
-          role === "hr"
-        ) {
-          navigate(
-            "/hr-dashboard",
-            {
-              replace: true,
-            }
-          );
-
-        } else if (
-          role === "employee"
-        ) {
-          navigate(
-            "/employee-dashboard",
-            {
-              replace: true,
-            }
-          );
-
-        } else {
-
-          navigate(
-            "/dashboard",
-            {
-              replace: true,
-            }
-          );
-
-        }
-
-      } catch {
-        navigate(
-          "/dashboard",
-          {
-            replace: true,
-          }
-        );
-      }
-
-
     } catch (err) {
-
-      setError(
-        err.message ||
-        "Unable to verify OTP."
-      );
-
-      setOtp([
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-      ]);
-
-      inputRefs.current[0]?.focus();
-
+      const detail = err.response?.data?.detail || err.message;
+      setError(typeof detail === "string" ? detail : "Invalid code. Please verify and retry.");
     } finally {
       setLoading(false);
     }
   };
 
-
-  /* =====================================================
-     RESEND OTP
-  ===================================================== */
-
-  const handleResendOTP =
-    async () => {
-
-      if (
-        countdown > 0 ||
-        loading
-      ) {
-        return;
-      }
-
-      setError("");
-
-      try {
-
-        const response =
-          await fetch(
-            `${API_URL}/api/auth/send-otp`,
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
-
-              body: JSON.stringify({
-                email,
-              }),
-            }
-          );
-
-
-        const data =
-          await response.json();
-
-
-        if (!response.ok) {
-          throw new Error(
-            data.detail ||
-            "Unable to resend OTP."
-          );
-        }
-
-
-        setOtp([
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-        ]);
-
-
-        setCountdown(60);
-
-
-        inputRefs.current[0]?.focus();
-
-
-      } catch (err) {
-
-        setError(
-          err.message ||
-          "Unable to resend OTP."
-        );
-
-      }
-    };
-
-
-  /* =====================================================
-     FORMAT EMAIL
-  ===================================================== */
-
-  const maskedEmail =
-    email
-      ? email
-      : "your email";
-
+  const handleResend = async () => {
+    if (resendCooldown > 0 || loading) return;
+    setLoading(true);
+    setError("");
+    try {
+      await authService.resendLoginOtp(email);
+      setResendCooldown(45);
+    } catch (err) {
+      const detail = err.response?.data?.detail || err.message;
+      setError(typeof detail === "string" ? detail : "Failed to resend code.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <main className="verify-page">
+    <div className="login-screen-wrap">
+      <div className="login-card-container">
+        <div className="login-brand-header">
+          <div className="login-logo-box">M</div>
+          <div className="login-brand-info">
+            <h2>Mediatize HRMS</h2>
+            <span>Security Verification</span>
+          </div>
+        </div>
 
-      {/* =================================================
-          BACKGROUND
-      ================================================= */}
+        {error && (
+          <div className="login-alert-banner error" role="alert">
+            <AlertCircle size={18} className="alert-ico" />
+            <div className="alert-txt">{error}</div>
+          </div>
+        )}
 
-      <div className="verify-background">
-        <span className="blob blob-violet"></span>
-        <span className="blob blob-blue"></span>
-        <span className="blob blob-peach"></span>
-        <span className="blob blob-pink"></span>
-      </div>
-
-
-      {/* =================================================
-          HEADER
-      ================================================= */}
-
-      <header className="verify-header">
-
-        <button
-          className="back-login-button"
-          onClick={() => navigate("/login")}
-        >
-          <span className="back-arrow">←</span>
-          <span>Back to Login</span>
-        </button>
-
-      </header>
-
-
-      {/* =================================================
-          OTP CARD
-      ================================================= */}
-
-      <div className="verify-wrapper">
-
-        <section className="verify-card">
-
-          {/* Card Icon */}
-
-          <div className="verify-card-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-              <rect
-                x="3"
-                y="5"
-                width="18"
-                height="14"
-                rx="2"
-                stroke="currentColor"
-                strokeWidth="1.7"
-              />
-              <path
-                d="M4 7L12 13L20 7"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+        <form onSubmit={handleVerify} className="login-form-body">
+          <div className="login-intro-text">
+            <h3>Enter Verification Code</h3>
+            <p>
+              We dispatched a 6-digit code to: <br />
+              <strong className="target-email">{email}</strong>
+            </p>
           </div>
 
-
-          {/* Heading */}
-
-          <h2>Verify OTP</h2>
-
-          <p className="verify-card-description">
-            We've sent a 6-digit verification code to
-            <br />
-            <strong>{maskedEmail}</strong>
-          </p>
-
-
-          {/* OTP FORM */}
-
-          <form className="otp-form" onSubmit={handleVerifyOTP}>
-
-            <div className="otp-inputs" onPaste={handlePaste}>
-              {otp.map((digit, index) => (
+          <div className="login-field-box">
+            <label htmlFor="verify-otp-digit-0">6-Digit Security Code</label>
+            <div className="otp-digit-inputs" onPaste={handleOtpPaste}>
+              {otpValues.map((digit, idx) => (
                 <input
-                  key={index}
-                  ref={(element) => {
-                    inputRefs.current[index] = element;
-                  }}
+                  key={idx}
+                  id={`verify-otp-digit-${idx}`}
+                  ref={(el) => (otpInputRefs.current[idx] = el)}
                   type="text"
                   inputMode="numeric"
+                  pattern="[0-9]*"
                   maxLength={1}
                   value={digit}
-                  onChange={(event) =>
-                    handleOtpChange(index, event.target.value)
-                  }
-                  onKeyDown={(event) => handleKeyDown(index, event)}
-                  className={digit ? "otp-input filled" : "otp-input"}
-                  aria-label={`OTP digit ${index + 1}`}
+                  onChange={(e) => handleOtpChange(idx, e.target.value)}
+                  onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                  onPaste={handleOtpPaste}
                   disabled={loading}
+                  className="otp-digit-cell"
+                  autoFocus={idx === 0}
+                  autoComplete={idx === 0 ? "one-time-code" : "off"}
+                  aria-label={`Digit ${idx + 1}`}
                 />
               ))}
             </div>
+          </div>
 
-            <p className="otp-helper">
-              Enter the 6-digit code sent to your email
-            </p>
+          <button 
+            type="submit" 
+            className="login-primary-btn" 
+            disabled={loading || otpValues.join("").length < 6}
+          >
+            {loading ? (
+              <>
+                <Loader2 size={18} className="spinner" />
+                <span>Verifying your account...</span>
+              </>
+            ) : (
+              <>
+                <ShieldCheck size={18} />
+                <span>Verify & Open Workspace</span>
+              </>
+            )}
+          </button>
 
-            {error && <div className="verify-error">{error}</div>}
-
+          <div className="login-otp-secondary-actions">
             <button
-              type="submit"
-              className="otp-verify-button"
-              disabled={loading}
+              type="button"
+              className="action-link-btn"
+              onClick={handleResend}
+              disabled={resendCooldown > 0 || loading}
             >
-              {loading ? (
-                <>
-                  <span className="otp-spinner"></span>
-                  Verifying...
-                </>
-              ) : (
-                <>
-                  <span>Verify OTP</span>
-                  <span className="otp-arrow">→</span>
-                </>
-              )}
+              <RotateCw size={14} className={loading ? "spin" : ""} />
+              {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : "Resend OTP"}
             </button>
 
-          </form>
-
-
-          {/* RESEND */}
-
-          <div className="resend-section">
-            <span>Didn't receive the code?</span>
-
-            {countdown > 0 ? (
-              <span className="resend-disabled">
-                Resend OTP
-                <span>
-                  {" "}
-                  ({`00:${String(countdown).padStart(2, "0")}`})
-                </span>
-              </span>
-            ) : (
-              <button
-                className="resend-button"
-                onClick={handleResendOTP}
-                disabled={loading}
-              >
-                Resend OTP
-              </button>
-            )}
+            <button
+              type="button"
+              className="action-link-btn muted"
+              onClick={() => navigate("/login")}
+              disabled={loading}
+            >
+              Change email
+            </button>
           </div>
+        </form>
 
-
-          {/* SECURITY BOX */}
-
-          <div className="verify-security">
-            <div className="security-icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 3L19 6V11C19 16 16.1 19.5 12 21C7.9 19.5 5 16 5 11V6L12 3Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M9 12L11 14L15 10"
-                  stroke="#ffffff"
-                  strokeWidth="1.7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-
-            <div>
-              <strong>Your information is secure with us.</strong>
-              <span>We never share your details with anyone.</span>
-            </div>
-          </div>
-
-        </section>
-
+        <div className="login-footer-nav">
+          <button 
+            type="button" 
+            className="login-back-btn" 
+            onClick={() => navigate("/login")}
+          >
+            <ArrowLeft size={15} />
+            <span>Use a different corporate email</span>
+          </button>
+        </div>
       </div>
-
-    </main>
+    </div>
   );
 }
-
-export default VerifyOTP;

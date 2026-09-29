@@ -1,0 +1,195 @@
+/* ============================================================
+   MEDIATIZE HRMS - ENTERPRISE FIXED LAYOUT STYLES
+   Theme: Deep Forest Green (#062d24, #047857), White, Slate
+   ============================================================ */
+
+:root {
+  --hr-topbar-height: 72px;
+  --hr-sidebar-width: 250px;
+  --hr-sidebar-collapsed-width: 72px;
+}
+
+.enterprise-layout-root {
+  min-height: 100vh;
+  background: #f8fafc;
+  display: flex;
+  position: relative;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+.enterprise-main-viewport {
+  flex: 1;
+  min-width: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.enterprise-page-body {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* ============================================================
+   ENTERPRISE MOBILE TOPBAR (Visible only on <= 1024px)
+   ============================================================ */
+.enterprise-mobile-topbar {
+  display: none;
+  height: 54px;
+  background: #062d24;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 16px;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-sizing: border-box;
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.enterprise-mobile-hamburger {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.enterprise-mobile-hamburger:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.mobile-brand-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-logo-badge-sm {
+  width: 30px;
+  height: 30px;
+  background: #047857;
+  color: #ffffff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 15px;
+  box-shadow: 0 2px 6px rgba(4, 120, 87, 0.35);
+}
+
+.brand-text-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-brand-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.mobile-brand-tag {
+  font-size: 9.5px;
+  color: #a7f3d0;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mobile-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-topbar-bell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.mobile-topbar-bell:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+/* Universal scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ================= RESPONSIVE BREAKPOINTS ================= */
+@media (max-width: 1024px) {
+  .enterprise-mobile-topbar {
+    display: flex;
+  }
+
+  .enterprise-main-viewport {
+    width: 100%;
+    min-width: 0;
+    max-width: 100vw;
+  }
+}
+
+@media (max-width: 480px) {
+  .enterprise-mobile-topbar {
+    padding: 0 12px;
+    height: 50px;
+  }
+
+  .mobile-brand-title {
+    font-size: 14px;
+  }
+
+  .mobile-brand-tag {
+    font-size: 8.5px;
+  }
+}

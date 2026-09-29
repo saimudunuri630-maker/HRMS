@@ -95,3 +95,14 @@ def get_current_user(
     )
 
     return user
+
+
+def get_current_hr(
+    user=Depends(get_current_user),
+):
+    if user.role != "hr":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="HR authorization required",
+        )
+    return user

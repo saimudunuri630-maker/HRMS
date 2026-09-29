@@ -4,6 +4,7 @@ from fastapi import (
     File,
     HTTPException,
     Query,
+    Request,
     UploadFile,
     status,
 )
@@ -148,16 +149,29 @@ def get_my_profile(
     "/me/profile",
     response_model=EmployeeResponse,
 )
-def update_my_profile(
+async def update_my_profile(
+    request: Request,
     data: EmployeeProfileUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if current_user.role != "employee":
+    if current_user.role not in ("hr", "employee"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only employees can update their own profile.",
+            detail="You are not authorized to update this profile.",
         )
+
+    try:
+        raw = await request.json()
+        if any(k in raw for k in ("email", "employee_number", "employee_code")):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Employee number and email address are immutable and cannot be changed.",
+            )
+    except HTTPException:
+        raise
+    except Exception:
+        pass
 
     return service.update_self_profile(
         db,
@@ -281,8 +295,9 @@ def get_employee(
     "/{employee_id}",
     response_model=EmployeeResponse,
 )
-def update_employee(
+async def update_employee(
     employee_id: int,
+    request: Request,
     data: EmployeeUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -292,6 +307,18 @@ def update_employee(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only HR can update employees.",
         )
+
+    try:
+        raw = await request.json()
+        if any(k in raw for k in ("email", "employee_number", "employee_code")):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Employee number and email address are immutable and cannot be changed.",
+            )
+    except HTTPException:
+        raise
+    except Exception:
+        pass
 
     return service.update_employee(
         db,
@@ -403,4 +430,5 @@ def archive_employee(
     return service.archive_employee(
         db,
         employee_id,
+        user_id=current_user.id,
     )

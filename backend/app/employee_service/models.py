@@ -14,10 +14,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-
-
-if TYPE_CHECKING:
-    from app.authentication_service.models import User
+from app.authentication_service.models import User
 
 
 class EmploymentStatus(str, Enum):
@@ -89,6 +86,16 @@ class Employee(Base):
         nullable=True,
     )
 
+    department: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    designation: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
     employment_status: Mapped[EmploymentStatus] = mapped_column(
         SQLEnum(
             EmploymentStatus,
@@ -132,6 +139,18 @@ class Employee(Base):
         foreign_keys=[user_id],
         lazy="joined",
     )
+
+    @property
+    def email(self) -> str | None:
+        return self.user.email if self.user else None
+
+    @property
+    def official_designation(self) -> str | None:
+        return self.designation
+
+    @property
+    def department_name(self) -> str | None:
+        return self.department
 
 
 Index(

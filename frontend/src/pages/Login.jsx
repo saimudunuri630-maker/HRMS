@@ -1,307 +1,440 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { 
+  Mail, 
+  ArrowRight, 
+  ArrowLeft, 
+  ShieldCheck, 
+  RotateCw, 
+  CheckCircle2, 
+  AlertCircle,
+  Loader2,
+  Lock
+} from "lucide-react";
+import { authService } from "../services/api";
+import { getSession } from "../App";
 import "../styles/Login.css";
 
-const API_URL = "http://localhost:8000";
-
-function Login() {
+export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
 
+  // If already authenticated, redirect to role dashboard
+  useEffect(() => {
+    const session = getSession();
+    if (session && session.token && session.user) {
+      const role = String(session.user?.role || "").toLowerCase();
+      navigate(role === "hr" ? "/hr/dashboard" : "/employee/dashboard", { replace: true });
+    }
+  }, [navigate]);
+
+  // Step state: 1 = Email Input, 2 = OTP Input, 3 = Success
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
+  const [otpValues, setOtpValues] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [resendSuccess, setResendSuccess] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
-  const handleSendOTP = async (event) => {
-    event.preventDefault();
+  const otpInputRefs = useRef([]);
 
-    setError("");
+  // Check if email was pre-passed from another route
+  useEffect(() => {
+    const passedEmail = location.state?.email || localStorage.getItem("auth_email");
+    if (passedEmail) {
+      setEmail(passedEmail);
+    }
+  }, [location]);
 
-    const trimmedEmail = email.trim();
+  // Resend cooldown timer
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
-    if (!trimmedEmail) {
-      setError("Please enter your registered email.");
+  // Focus first OTP field when entering Step 2
+  useEffect(() => {
+    if (step === 2 && otpInputRefs.current[0]) {
+      setTimeout(() => {
+        otpInputRefs.current[0]?.focus();
+      }, 100);
+    }
+  }, [step]);
+
+  // STATE 1: Send OTP
+  const handleSendOtp = async (e) => {
+    e?.preventDefault();
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (!cleanEmail || !cleanEmail.includes("@")) {
+      setError("Please enter a valid corporate email address.");
       return;
     }
 
     setLoading(true);
+    setError("");
 
     try {
-      const response = await fetch(`${API_URL}/api/auth/send-otp`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: trimmedEmail,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || "Unable to send OTP.");
-      }
-
-      // Save email for OTP verification page
-      sessionStorage.setItem("hrms_login_email", trimmedEmail);
-
-      // Move to OTP verification page
-      navigate("/verify-otp");
+      await authService.requestLoginOtp(cleanEmail);
+      localStorage.setItem("auth_email", cleanEmail);
+      setStep(2);
+      setResendCooldown(45);
     } catch (err) {
-      setError(err.message || "Something went wrong. Please try again.");
+      console.error("Login OTP error:", err);
+      const detail = err.response?.data?.detail || err.message;
+      if (err.response?.status === 404) {
+        setError("Account not found. Please contact HR.");
+      } else if (err.response?.status === 403) {
+        setError("Your account is currently inactive. Please contact HR.");
+      } else if (typeof detail === "string" && detail.length < 120) {
+        setError(detail);
+      } else {
+        setError("Unable to send OTP right now. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  // Dedicated clipboard paste handler for 6-digit OTP
+  const handleOtpPaste = (e) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData?.getData("text") || "";
+    const cleanDigits = pasteData.replace(/\D/g, "").slice(0, 6);
+    if (!cleanDigits) return;
+
+    const newArr = [...otpValues];
+    for (let i = 0; i < 6; i++) {
+      newArr[i] = cleanDigits[i] || "";
+    }
+    setOtpValues(newArr);
+
+    const focusIdx = Math.min(cleanDigits.length, 5);
+    otpInputRefs.current[focusIdx]?.focus();
+  };
+
+  // Handle individual OTP input changes with auto-advancing
+  const handleOtpChange = (index, value) => {
+    const cleanDigits = value.replace(/\D/g, "");
+
+    // If empty (e.g. deletion)
+    if (!cleanDigits) {
+      const newArr = [...otpValues];
+      newArr[index] = "";
+      setOtpValues(newArr);
+      return;
+    }
+
+    // If multiple digits (pasted or browser autofilled)
+    if (cleanDigits.length > 1) {
+      const newArr = [...otpValues];
+      for (let i = 0; i < cleanDigits.length && index + i < 6; i++) {
+        newArr[index + i] = cleanDigits[i];
+      }
+      setOtpValues(newArr);
+      const nextIdx = Math.min(index + cleanDigits.length, 5);
+      otpInputRefs.current[nextIdx]?.focus();
+      return;
+    }
+
+    // Single digit input: take the last entered numeric digit
+    const newArr = [...otpValues];
+    newArr[index] = cleanDigits.slice(-1);
+    setOtpValues(newArr);
+
+    // Auto advance to next cell
+    if (index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === "Backspace") {
+      if (!otpValues[index] && index > 0) {
+        const newArr = [...otpValues];
+        newArr[index - 1] = "";
+        setOtpValues(newArr);
+        otpInputRefs.current[index - 1]?.focus();
+      } else {
+        const newArr = [...otpValues];
+        newArr[index] = "";
+        setOtpValues(newArr);
+      }
+    } else if (e.key === "ArrowLeft" && index > 0) {
+      e.preventDefault();
+      otpInputRefs.current[index - 1]?.focus();
+    } else if (e.key === "ArrowRight" && index < 5) {
+      e.preventDefault();
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  // STATE 2 -> STATE 3/4/5: Verify OTP
+  const handleVerifyOtp = async (e) => {
+    e?.preventDefault();
+    const fullOtp = otpValues.join("").trim();
+
+    if (fullOtp.length < 6) {
+      setError("Please input the complete 6-digit verification code.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const data = await authService.verifyOtpCode(email, fullOtp);
+      
+      // Authoritative role retrieval from backend
+      const userObj = data.user;
+      const role = String(userObj?.role || "").toLowerCase();
+
+      setStep(3); // Success animation
+
+      setTimeout(() => {
+        if (role === "hr") {
+          navigate("/hr/dashboard", { replace: true });
+        } else {
+          navigate("/employee/dashboard", { replace: true });
+        }
+      }, 700);
+
+    } catch (err) {
+      console.error("Verification error:", err);
+      const detail = err.response?.data?.detail || err.message;
+      if (err.response?.status === 400 || err.response?.status === 401) {
+        setError("Invalid or expired verification code. Please check and try again.");
+      } else {
+        setError(typeof detail === "string" ? detail : "Authentication failed. Please verify your OTP code.");
+      }
+      setLoading(false);
+    }
+  };
+
+  // Resend OTP
+  const handleResend = async () => {
+    if (resendCooldown > 0 || loading) return;
+    setLoading(true);
+    setError("");
+    setResendSuccess(false);
+
+    try {
+      await authService.resendLoginOtp(email);
+      setResendSuccess(true);
+      setResendCooldown(45);
+      setTimeout(() => setResendSuccess(false), 4000);
+    } catch (err) {
+      const detail = err.response?.data?.detail || err.message;
+      setError(typeof detail === "string" ? detail : "Failed to resend code. Please try again shortly.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChangeEmail = () => {
+    setStep(1);
+    setOtpValues(["", "", "", "", "", ""]);
+    setError("");
+  };
+
   return (
-    <main className="login-page">
-      {/* ================= BACKGROUND PHOTO ================= */}
+    <div className="login-screen-wrap">
+      <div className="login-card-container">
+        
+        {/* Brand Header */}
+        <div className="login-brand-header">
+          <div className="login-logo-box">M</div>
+          <div className="login-brand-info">
+            <h2>Mediatize HRMS</h2>
+            <span>Unified Workforce Gateway</span>
+          </div>
+        </div>
 
-      <div className="login-background">
-        <div className="login-background-overlay"></div>
-      </div>
+        {/* Step Indicator */}
+        <div className="login-step-tracker">
+          <div className={`step-item ${step === 1 ? "active" : "done"}`}>
+            <span className="step-num">1</span>
+            <span className="step-lbl">Work Email</span>
+          </div>
+          <div className="step-track-line"></div>
+          <div className={`step-item ${step === 2 ? "active" : step === 3 ? "done" : ""}`}>
+            <span className="step-num">2</span>
+            <span className="step-lbl">OTP Verification</span>
+          </div>
+        </div>
 
-      {/* ================= TOP-RIGHT TAGLINE ================= */}
+        {/* Alerts */}
+        {error && (
+          <div className="login-alert-banner error" role="alert">
+            <AlertCircle size={18} className="alert-ico" />
+            <div className="alert-txt">{error}</div>
+          </div>
+        )}
 
-      <p className="login-tagline">People Make Progress</p>
+        {resendSuccess && (
+          <div className="login-alert-banner success" role="status">
+            <CheckCircle2 size={18} className="alert-ico" />
+            <div className="alert-txt">New security verification code sent to your email.</div>
+          </div>
+        )}
 
-      {/* ================= MAIN LAYOUT ================= */}
-
-      <div className="login-layout">
-        {/* ---------- LEFT NAVY PANEL ---------- */}
-
-        <section className="login-info-panel">
-          {/* Brand */}
-          <div className="login-brand">
-            <div className="login-brand-logo">
-              <svg
-                viewBox="0 0 48 42"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <circle cx="15" cy="10" r="7" fill="#5746E8" />
-                <circle cx="32" cy="10" r="7" fill="#F28A32" />
-                <circle cx="24" cy="15" r="7" fill="#746BE8" />
-                <path
-                  d="M4 35C4 26.7 8.9 22 15 22s11 4.7 11 13v2H4v-2Z"
-                  fill="#5746E8"
-                />
-                <path
-                  d="M22 35c0-7.2 4-12 10-12s10 4.8 10 12v2H22v-2Z"
-                  fill="#F28A32"
-                />
-              </svg>
+        {/* STEP 1: Enter Email */}
+        {step === 1 && (
+          <form onSubmit={handleSendOtp} className="login-form-body">
+            <div className="login-intro-text">
+              <h3>Sign in to Workspace</h3>
+              <p>Unified enterprise portal for both HR administration and employee self-service.</p>
             </div>
 
-            <span>HRMS</span>
-          </div>
-
-          <div className="login-info-line"></div>
-
-          {/* Main message */}
-          <div className="login-info-content">
-            <h1>
-              Same People.
-              <br />
-              A Stronger
-              <br />
-              <span>Tomorrow.</span>
-            </h1>
-
-            <p>
-              An intelligent HRMS platform that simplifies HR operations and
-              keeps your organization connected.
-            </p>
-          </div>
-
-          {/* Features */}
-          <ul className="login-features">
-            <li className="login-feature">
-              <div className="login-feature-icon profile-icon">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                  aria-hidden="true"
-                >
-                  <circle cx="12" cy="8" r="3" />
-                  <path d="M5 20c.7-4 3-6 7-6s6.3 2 7 6" strokeLinecap="round" />
-                </svg>
-              </div>
-              <span>Manage Your Profile</span>
-            </li>
-
-            <li className="login-feature">
-              <div className="login-feature-icon attendance-icon">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                  aria-hidden="true"
-                >
-                  <rect x="4" y="5" width="16" height="15" rx="2" />
-                  <path d="M8 3v4" />
-                  <path d="M16 3v4" />
-                  <path d="M4 10h16" />
-                  <path d="M8 14h2M14 14h2M8 17h2" strokeLinecap="round" />
-                </svg>
-              </div>
-              <span>Track Attendance</span>
-            </li>
-
-            <li className="login-feature">
-              <div className="login-feature-icon leave-icon">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.7"
-                  aria-hidden="true"
-                >
-                  <path d="M6 3h9l4 4v14H6z" />
-                  <path d="M14 3v5h5" />
-                  <path
-                    d="M9 14l2 2 4-4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <span>Apply for Leaves</span>
-            </li>
-          </ul>
-
-          {/* Footer */}
-          <div className="login-info-footer">
-            <span>People</span>
-            <span aria-hidden="true">•</span>
-            <span>Growth</span>
-            <span aria-hidden="true">•</span>
-            <span>Success</span>
-          </div>
-        </section>
-
-        {/* ---------- LOGIN CARD ---------- */}
-
-        <section className="login-card-wrapper">
-          <div className="login-card">
-            <div className="login-card-icon">
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <rect
-                  x="3"
-                  y="5"
-                  width="18"
-                  height="14"
-                  rx="2"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                />
-                <path
-                  d="M4 7L12 13L20 7"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-
-            <h2>Welcome Back</h2>
-
-            <p className="login-card-subtitle">Login to your HRMS account</p>
-
-            <form className="login-form" onSubmit={handleSendOTP}>
-              <div className="input-wrapper">
-                <svg className="input-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <rect
-                    x="3"
-                    y="5"
-                    width="18"
-                    height="14"
-                    rx="2"
-                    stroke="currentColor"
-                    strokeWidth="1.7"
-                  />
-                  <path
-                    d="M4 7L12 13L20 7"
-                    stroke="currentColor"
-                    strokeWidth="1.7"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-
+            <div className="login-field-box">
+              <label htmlFor="login-email">Corporate Email Address</label>
+              <div className="login-input-shell">
+                <Mail size={18} className="login-field-icon" />
                 <input
+                  id="login-email"
                   type="email"
-                  name="email"
-                  inputMode="email"
+                  placeholder="name@mediatize.com"
                   value={email}
-                  onChange={(event) => {
-                    setEmail(event.target.value);
-                    setError("");
-                  }}
-                  placeholder="Enter your registered email"
-                  aria-label="Registered email"
-                  aria-describedby="email-helper"
-                  aria-invalid={error ? "true" : "false"}
-                  autoComplete="email"
+                  onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
+                  required
+                  autoFocus
                 />
               </div>
+              <small className="field-hint">A one-time passcode will be sent to this email</small>
+            </div>
 
-              <p className="email-helper" id="email-helper">
-                We'll send a secure verification code to your email.
-              </p>
-
-              {error && (
-                <div className="login-error" role="alert">
-                  {error}
-                </div>
+            <button 
+              type="submit" 
+              className="login-primary-btn" 
+              disabled={loading}
+              id="btn-login-send-otp"
+            >
+              {loading ? (
+                <>
+                  <Loader2 size={18} className="spinner" />
+                  <span>Dispatching Code...</span>
+                </>
+              ) : (
+                <>
+                  <span>Continue / Send OTP</span>
+                  <ArrowRight size={17} />
+                </>
               )}
+            </button>
+          </form>
+        )}
 
-              <button type="submit" className="verify-button" disabled={loading}>
-                {loading ? (
-                  <>
-                    <span className="button-spinner"></span>
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <span>Verify</span>
-                    <span className="verify-arrow" aria-hidden="true">
-                      →
-                    </span>
-                  </>
-                )}
+        {/* STEP 2: Enter OTP */}
+        {step === 2 && (
+          <form onSubmit={handleVerifyOtp} className="login-form-body">
+            <div className="login-intro-text">
+              <h3>Security Verification</h3>
+              <p>
+                We sent a 6-digit verification code to: <br />
+                <strong className="target-email">{email}</strong>
+              </p>
+            </div>
+
+            <div className="login-field-box">
+              <label htmlFor="otp-digit-0">Enter 6-Digit Security Code</label>
+              <div className="otp-digit-inputs" onPaste={handleOtpPaste}>
+                {otpValues.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    id={`otp-digit-${idx}`}
+                    ref={(el) => (otpInputRefs.current[idx] = el)}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(idx, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                    onPaste={handleOtpPaste}
+                    disabled={loading}
+                    className="otp-digit-cell"
+                    autoFocus={idx === 0}
+                    autoComplete={idx === 0 ? "one-time-code" : "off"}
+                    aria-label={`Digit ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <button 
+              type="submit" 
+              className="login-primary-btn" 
+              disabled={loading || otpValues.join("").length < 6}
+              id="btn-login-verify-otp"
+            >
+              {loading ? (
+                <>
+                  <Loader2 size={18} className="spinner" />
+                  <span>Verifying your account...</span>
+                </>
+              ) : (
+                <>
+                  <ShieldCheck size={18} />
+                  <span>Verify OTP & Open Portal</span>
+                </>
+              )}
+            </button>
+
+            <div className="login-otp-secondary-actions">
+              <button
+                type="button"
+                className="action-link-btn"
+                onClick={handleResend}
+                disabled={resendCooldown > 0 || loading}
+              >
+                <RotateCw size={14} className={loading ? "spin" : ""} />
+                {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : "Resend OTP"}
               </button>
-            </form>
 
-            <div className="login-security">
-              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path
-                  d="M12 2.5L20 5.8V11.4C20 16.4 16.7 20.3 12 21.9C7.3 20.3 4 16.4 4 11.4V5.8L12 2.5Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M8.6 12.1L11 14.5L15.6 9.7"
-                  stroke="#ffffff"
-                  strokeWidth="1.9"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <button
+                type="button"
+                className="action-link-btn muted"
+                onClick={handleChangeEmail}
+                disabled={loading}
+              >
+                Change email
+              </button>
+            </div>
+          </form>
+        )}
 
-              <span>Your information is secure with us.</span>
+        {/* STEP 3: Success Transition */}
+        {step === 3 && (
+          <div className="login-success-state">
+            <div className="success-icon-badge">
+              <CheckCircle2 size={44} />
+            </div>
+            <h3>Authentication Successful</h3>
+            <p>Access granted. Redirecting to your assigned workspace...</p>
+            <div className="login-redirect-loader">
+              <Loader2 size={24} className="spinner text-emerald" />
             </div>
           </div>
-        </section>
+        )}
+
+        {/* Back to Welcome */}
+        <div className="login-footer-nav">
+          <button 
+            type="button" 
+            className="login-back-btn" 
+            onClick={() => navigate("/welcome")}
+          >
+            <ArrowLeft size={15} />
+            <span>Back to Welcome Page</span>
+          </button>
+        </div>
+
       </div>
-    </main>
+    </div>
   );
 }
-
-export default Login;

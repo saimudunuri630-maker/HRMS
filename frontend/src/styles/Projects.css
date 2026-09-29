@@ -1,0 +1,1746 @@
+/* ============================================================
+   MEDIATIZE HRMS - ENTERPRISE PROJECTS & ROLES SYSTEM STYLES
+   Color Palette: Deep Emerald (#064e3b, #047857), Slate, White
+   ============================================================ */
+
+.prj-page-wrapper {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  font-family: inherit;
+  color: #0f172a;
+}
+
+.prj-header-bar {
+  height: var(--hr-topbar-height, 72px);
+  min-height: var(--hr-topbar-height, 72px);
+  max-height: var(--hr-topbar-height, 72px);
+  box-sizing: border-box;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  flex-shrink: 0;
+}
+
+.prj-header-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.prj-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.prj-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid #e2e8f0;
+}
+
+.prj-back-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.prj-header-meta h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.prj-header-meta span {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.prj-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.prj-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #047857;
+  color: #ffffff;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(4, 120, 87, 0.25);
+  transition: all 0.2s ease;
+}
+
+.prj-primary-btn:hover {
+  background: #065f46;
+  box-shadow: 0 4px 10px rgba(4, 120, 87, 0.35);
+}
+
+.prj-content-container,
+.prj-main-container,
+.project-page-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 32px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ================= 2. 5 KPI CARDS GRID (DESKTOP) ================= */
+.project-kpi-grid,
+.prj-metrics-grid {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 16px;
+  margin-bottom: 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ================= 4. KPI CARD DESIGN ================= */
+.project-kpi-card,
+.prj-metric-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  box-sizing: border-box;
+  width: auto;
+}
+
+.project-kpi-card:hover,
+.prj-metric-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* 1st: ICON */
+.kpi-icon-badge,
+.prj-metric-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* Semantic subtle accents (Total: Neutral/green, Active: Green, Completed: Success/neutral, On Hold: Warning, Overdue: Danger) */
+.kpi-icon-badge.total,
+.prj-metric-icon.total {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.kpi-icon-badge.active,
+.prj-metric-icon.active {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.kpi-icon-badge.completed,
+.prj-metric-icon.completed {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.kpi-icon-badge.onhold,
+.kpi-icon-badge.on-hold,
+.prj-metric-icon.onhold,
+.prj-metric-icon.on-hold {
+  background: #fffbeb;
+  color: #d97706;
+}
+
+.kpi-icon-badge.overdue,
+.prj-metric-icon.overdue {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+/* 2nd: LABEL */
+.kpi-label,
+.prj-metric-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: capitalize;
+  letter-spacing: 0.01em;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+/* 3rd: VALUE (Visually prominent 26px / 700) */
+.kpi-value,
+.prj-metric-number,
+.prj-metric-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.1;
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+
+.kpi-value.text-emerald,
+.prj-metric-number.text-emerald {
+  color: #047857;
+}
+
+.kpi-value.text-amber,
+.prj-metric-number.text-amber {
+  color: #d97706;
+}
+
+.kpi-value.text-rose,
+.prj-metric-number.text-rose,
+.prj-metric-number-overdue {
+  color: #dc2626;
+}
+
+/* ================= 3. KPI RESPONSIVE BREAKPOINTS ================= */
+@media (max-width: 1199px) {
+  .project-kpi-grid,
+  .prj-metrics-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 900px) {
+  .project-kpi-grid,
+  .prj-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 767px) {
+  .project-kpi-grid,
+  .prj-metrics-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+}
+
+/* Also support 3-card metric strip for employee view */
+.prj-metric-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.prj-metric-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.prj-metric-sub {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* ================= TOOLBAR & FILTERS ================= */
+.prj-toolbar-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.prj-filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.prj-filter-btn {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.prj-filter-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.prj-filter-btn.active {
+  background: #047857;
+  color: #ffffff;
+  border-color: #047857;
+}
+
+.prj-filter-btn .counter {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 2px 7px;
+  border-radius: 12px;
+  font-size: 11px;
+}
+
+.prj-filter-btn.active .counter {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.prj-search-box {
+  position: relative;
+  min-width: 260px;
+  flex-grow: 1;
+  max-width: 400px;
+}
+
+.prj-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+.prj-search-input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+  background: #ffffff;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.prj-search-input:focus {
+  border-color: #047857;
+  box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.12);
+}
+
+/* ================= PROJECT CARDS GRID ================= */
+.prj-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 20px;
+}
+
+.prj-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.prj-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+.prj-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.prj-card-title-group h3 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+}
+
+.prj-code-badge {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #334155;
+  font-family: "Calibri", "Calibri Body", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  letter-spacing: 0.02em;
+}
+
+/* Status Badges */
+.prj-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.prj-status-pill.active {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.prj-status-pill.completed {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.prj-status-pill.on_hold,
+.prj-status-pill.planning {
+  background: #fefce8;
+  color: #854d0e;
+  border: 1px solid #fef08a;
+}
+
+.prj-status-pill .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.prj-card-desc {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 38px;
+}
+
+.prj-card-meta-list {
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.prj-card-meta-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.prj-card-meta-item strong {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.prj-role-highlight {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ecfdf5;
+  color: #065f46;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.prj-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 14px;
+}
+
+.prj-btn-ghost {
+  background: transparent;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.prj-btn-ghost:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+.prj-btn-primary-sm {
+  background: #047857;
+  color: #ffffff;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.prj-btn-primary-sm:hover {
+  background: #065f46;
+}
+
+/* ================= MODAL & DETAILS DRAWER ================= */
+.prj-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.prj-modal-card {
+  background: #ffffff;
+  border-radius: 16px;
+  max-width: 720px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.prj-modal-card form,
+.prj-modal-form-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.prj-modal-card.large {
+  max-width: 880px;
+}
+
+.prj-modal-card.xlarge {
+  max-width: 960px;
+}
+
+.prj-modal-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+.prj-modal-header h3 {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.prj-modal-header p {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.prj-modal-close {
+  background: #f1f5f9;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.prj-modal-close:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.prj-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.prj-form-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.prj-modal-tabs {
+  display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.prj-tab-btn {
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.prj-tab-btn:hover {
+  color: #0f172a;
+}
+
+.prj-tab-btn.active {
+  color: #047857;
+  border-bottom-color: #047857;
+}
+
+.prj-tab-btn .badge {
+  background: #f1f5f9;
+  padding: 2px 7px;
+  border-radius: 12px;
+  font-size: 11px;
+}
+
+.prj-tab-btn.active .badge {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+/* Form Styles inside Modal */
+.prj-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.prj-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prj-form-group.full {
+  grid-column: span 2;
+}
+
+.prj-form-group label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.prj-form-input,
+.prj-form-select,
+.prj-form-textarea {
+  padding: 9px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+  background: #ffffff;
+  color: #0f172a;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.prj-form-input:focus,
+.prj-form-select:focus,
+.prj-form-textarea:focus {
+  border-color: #047857;
+  box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.12);
+}
+
+.prj-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+/* ================= MEMBER & ROLE LISTS ================= */
+.prj-member-list,
+.prj-role-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.prj-member-row,
+.prj-role-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  gap: 12px;
+}
+
+.prj-member-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.prj-avatar-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #047857;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.prj-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.prj-member-names strong {
+  display: block;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.prj-member-names span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.prj-member-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.prj-empty-box {
+  text-align: center;
+  padding: 40px 20px;
+  color: #64748b;
+}
+
+.prj-empty-box h4 {
+  margin: 12px 0 6px 0;
+  color: #0f172a;
+  font-size: 16px;
+}
+
+.prj-empty-box p {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 768px) {
+  .prj-header-bar {
+    height: auto;
+    min-height: var(--hr-topbar-height, 72px);
+    padding: 8px 0;
+  }
+  .prj-header-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .prj-header-actions {
+    justify-content: flex-end;
+  }
+  .prj-toolbar-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .prj-search-box {
+    max-width: none;
+  }
+  .prj-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .prj-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .prj-form-group.full {
+    grid-column: span 1;
+  }
+  .prj-member-row,
+  .prj-role-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .prj-member-meta {
+    justify-content: space-between;
+  }
+}
+
+/* ================= SEPARATED PROJECT DETAILS & ACTION BARS ================= */
+.prj-details-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 24px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.prj-btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.prj-btn-action.primary {
+  background: #047857;
+  color: #ffffff;
+}
+
+.prj-btn-action.primary:hover {
+  background: #065f46;
+}
+
+.prj-btn-action.outline {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.prj-btn-action.outline:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.prj-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.prj-overview-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.prj-overview-card.full {
+  grid-column: span 2;
+}
+
+.prj-overview-card .label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.prj-overview-card .value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.prj-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 20px 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.prj-section-header h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+@media (max-width: 640px) {
+  .prj-overview-grid {
+    grid-template-columns: 1fr;
+  }
+  .prj-overview-card.full {
+    grid-column: span 1;
+  }
+  .prj-details-action-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .prj-btn-action {
+    justify-content: center;
+  }
+}
+
+/* ================= EDIT MODAL: TWO-SECTION ARCHITECTURE ================= */
+.prj-modal-card.xlarge {
+  max-width: 960px;
+  width: 95%;
+}
+
+.prj-edit-section-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.prj-edit-section-card:last-child {
+  margin-bottom: 0;
+}
+
+.prj-section-title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.prj-section-title-bar h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prj-section-title-bar p {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.prj-team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.prj-team-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.prj-team-card:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.prj-team-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.prj-avatar-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #047857;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.prj-avatar-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.prj-team-card-info h5 {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.prj-team-card-info .code-email {
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.prj-team-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 0;
+  border-top: 1px solid #edf2f7;
+  border-bottom: 1px solid #edf2f7;
+  font-size: 12px;
+}
+
+.prj-team-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.prj-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.prj-roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.prj-role-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.prj-role-card .role-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.prj-role-card .role-count {
+  font-size: 11px;
+  color: #64748b;
+}
+
+@media (max-width: 768px) {
+  .prj-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  .prj-metric-strip {
+    grid-template-columns: 1fr;
+  }
+  .prj-content-container {
+    padding: 16px;
+  }
+  .prj-modal-card.xlarge {
+    width: 100%;
+    max-height: 96vh;
+    border-radius: 12px;
+  }
+  .prj-team-grid {
+    grid-template-columns: 1fr;
+  }
+  .prj-roles-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   PROGRESS & PRIORITY SYSTEM (Mediatize Emerald Theme)
+   ============================================================ */
+
+.prj-progress-wrap {
+  margin: 10px 0;
+}
+
+.prj-progress-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #475569;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.prj-progress-track {
+  width: 100%;
+  height: 7px;
+  background: #e2e8f0;
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.prj-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+  border-radius: 9999px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prj-progress-fill.completed {
+  background: #047857;
+}
+
+.prj-priority-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.prj-priority-pill.low {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.prj-priority-pill.medium {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.prj-priority-pill.high {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.prj-priority-pill.critical {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.prj-metric-number-overdue {
+  color: #dc2626;
+}
+
+.prj-edit-section-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.prj-edit-section-card:last-child {
+  margin-bottom: 0;
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN (HRMS ENTERPRISE PROJECTS & ROLES)
+   ============================================================ */
+@media (max-width: 1024px) {
+  .prj-metrics-grid,
+  .project-kpi-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .prj-cards-grid,
+  .prj-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .prj-header-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .prj-header-left {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .prj-header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .prj-metrics-grid,
+  .project-kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  .prj-toolbar-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 16px !important;
+  }
+
+  .prj-filters-group {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .prj-cards-grid,
+  .prj-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .prj-modal-overlay {
+    padding: 10px;
+  }
+
+  .prj-modal-card {
+    max-width: 100% !important;
+    width: 100% !important;
+    border-radius: 12px;
+  }
+
+  .prj-modal-header {
+    padding: 14px 18px;
+  }
+
+  .prj-modal-body {
+    padding: 16px 18px !important;
+  }
+
+  .prj-modal-footer {
+    padding: 12px 18px;
+  }
+
+  .prj-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .prj-form-group.full {
+    grid-column: span 1 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .prj-metrics-grid,
+  .project-kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .prj-modal-header h3 {
+    font-size: 16px;
+  }
+
+  .prj-tab-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .prj-card-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .prj-card-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ============================================================
+   PROJECT DETAILS MODAL: ROLES & TEAM SECTION
+   Theme: Mediatize Enterprise Green (#062d24, #047857, #ecfdf5)
+   ============================================================ */
+.prj-roles-team-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.prj-roles-team-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.prj-roles-team-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prj-roles-team-title h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.prj-roles-team-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.prj-roles-count-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 3px 10px;
+  border-radius: 9999px;
+}
+
+.prj-roles-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.prj-roles-refresh-btn:hover {
+  background: #f8fafc;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.prj-roles-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 16px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  color: #64748b;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.prj-roles-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px 16px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.prj-roles-empty p {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.prj-roles-cards-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.prj-role-detail-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px 18px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.prj-role-detail-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.prj-role-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.prj-role-title-wrap {
+  flex: 1;
+}
+
+.prj-role-detail-name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.prj-role-detail-desc {
+  margin: 4px 0 0 0;
+  font-size: 12.5px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.prj-role-status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.prj-role-status-badge.filled {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.prj-role-status-badge.open {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+.prj-role-metrics-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+
+.prj-role-metric {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+}
+
+.prj-role-metric .metric-lbl {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.prj-role-metric .metric-val {
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.prj-role-metric .metric-val strong {
+  color: #047857;
+  font-weight: 700;
+}
+
+.prj-role-assigned-section {
+  border-top: 1px dashed #e2e8f0;
+  padding-top: 12px;
+}
+
+.prj-role-assigned-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+.prj-role-no-employees {
+  font-size: 12.5px;
+  color: #94a3b8;
+  font-style: italic;
+  padding: 4px 0;
+}
+
+.prj-role-employees-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 8px;
+}
+
+.prj-assigned-emp-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.prj-assigned-emp-pill:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.emp-avatar-sm {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #047857;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(4, 120, 87, 0.3);
+}
+
+.emp-info-wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.emp-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.emp-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.emp-code-pill {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+.emp-designation {
+  font-size: 11.5px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+@media (max-width: 640px) {
+  .prj-role-employees-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .prj-role-metrics-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
+
+
+

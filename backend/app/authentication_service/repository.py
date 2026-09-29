@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.authentication_service.models import (
@@ -17,9 +18,10 @@ def get_user_by_email(
     db: Session,
     email: str
 ):
+    clean_email = email.strip().lower() if email else ""
     return (
         db.query(User)
-        .filter(User.email == email)
+        .filter(func.lower(User.email) == clean_email)
         .first()
     )
 
@@ -45,8 +47,9 @@ def create_otp(
     otp_hash: str,
     expires_at: datetime
 ):
+    clean_email = email.strip().lower() if email else ""
     otp = OTPVerification(
-        email=email,
+        email=clean_email,
         otp_hash=otp_hash,
         expires_at=expires_at,
         attempts=0,
@@ -64,10 +67,11 @@ def get_latest_otp(
     db: Session,
     email: str
 ):
+    clean_email = email.strip().lower() if email else ""
     return (
         db.query(OTPVerification)
         .filter(
-            OTPVerification.email == email,
+            func.lower(OTPVerification.email) == clean_email,
             OTPVerification.is_used.is_(False),
         )
         .order_by(
@@ -81,10 +85,11 @@ def invalidate_previous_otps(
     db: Session,
     email: str
 ):
+    clean_email = email.strip().lower() if email else ""
     (
         db.query(OTPVerification)
         .filter(
-            OTPVerification.email == email,
+            func.lower(OTPVerification.email) == clean_email,
             OTPVerification.is_used.is_(False),
         )
         .update(
@@ -124,10 +129,11 @@ def get_last_otp(
     db: Session,
     email: str
 ):
+    clean_email = email.strip().lower() if email else ""
     return (
         db.query(OTPVerification)
         .filter(
-            OTPVerification.email == email
+            func.lower(OTPVerification.email) == clean_email
         )
         .order_by(
             OTPVerification.created_at.desc()

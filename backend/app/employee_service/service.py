@@ -15,6 +15,9 @@ from app.employee_service.schemas import (
     EmployeeStatusUpdate,
     EmployeeUpdate,
 )
+from app.email_service.service import send_employee_welcome_email
+from app.audit_service.service import log_audit_event
+
 
 
 # ============================================================
@@ -71,12 +74,13 @@ def create_employee(
 ) -> Employee:
 
     # --------------------------------------------------------
-    # 1. Check email
+    # 1. Normalize and Check email
     # --------------------------------------------------------
+    clean_email = data.email.strip().lower()
 
     existing_user = (
         db.query(User)
-        .filter(User.email == data.email)
+        .filter(func.lower(User.email) == clean_email)
         .first()
     )
 
@@ -87,19 +91,33 @@ def create_employee(
         )
 
     # --------------------------------------------------------
-    # 2. Generate employee code
+    # 2. Generate or validate employee code
     # --------------------------------------------------------
 
-    employee_code = generate_next_employee_code(db)
+    if hasattr(data, "employee_code") and data.employee_code and data.employee_code.strip():
+        clean_code = data.employee_code.strip().upper()
+        existing_emp = (
+            db.query(Employee)
+            .filter(func.upper(Employee.employee_code) == clean_code)
+            .first()
+        )
+        if existing_emp:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"An employee with employee code '{clean_code}' already exists.",
+            )
+        employee_code = clean_code
+    else:
+        employee_code = generate_next_employee_code(db)
 
     # --------------------------------------------------------
     # 3. Create User
     # --------------------------------------------------------
 
     user = User(
-        email=data.email,
+        email=clean_email,
         full_name=(
-            f"{data.first_name} {data.last_name}"
+            f"{data.first_name.strip()} {data.last_name.strip()}"
         ).strip(),
         role="employee",
         is_active=True,
@@ -113,15 +131,26 @@ def create_employee(
     # 4. Create Employee profile
     # --------------------------------------------------------
 
+    clean_designation = data.designation.strip() if data.designation else ""
+    if not clean_designation:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Designation is required.",
+        )
+
+    clean_department = data.department.strip() if data.department else "Engineering & Operations"
+
     employee = Employee(
         user_id=user.id,
         employee_code=employee_code,
-        first_name=data.first_name,
-        last_name=data.last_name,
-        phone=data.phone,
+        first_name=data.first_name.strip(),
+        last_name=data.last_name.strip(),
+        phone=data.phone.strip() if data.phone else None,
         date_of_birth=data.date_of_birth,
-        address=data.address,
+        address=data.address.strip() if data.address else None,
         joining_date=data.joining_date,
+        department=clean_department,
+        designation=clean_designation,
         department_id=data.department_id,
         designation_id=data.designation_id,
         employment_status=EmploymentStatus.ACTIVE,
@@ -136,6 +165,33 @@ def create_employee(
     try:
         db.commit()
         db.refresh(employee)
+
+        # Send onboarding welcome email (Phase 23)
+        try:
+            send_employee_welcome_email(
+                recipient_email=clean_email,
+                first_name=data.first_name.strip(),
+                employee_code=employee_code,
+                entity_id=employee.id,
+                db=db,
+            )
+        except Exception as e:
+            print(f"[WARNING] Could not dispatch employee welcome email: {e}")
+
+        try:
+            log_audit_event(
+                actor_user_id=None,
+                action="Employee created",
+                module="EMPLOYEE",
+                entity_type="EMPLOYEE",
+                entity_id=employee.id,
+                employee_id=employee.id,
+                description=f"Created employee {employee.first_name} {employee.last_name} ({employee.employee_code})",
+                new_value={"code": employee.employee_code, "name": f"{employee.first_name} {employee.last_name}", "email": clean_email},
+                db=db,
+            )
+        except Exception as e:
+            print(f"[WARNING] Could not log audit for employee creation: {e}")
 
     except Exception:
         db.rollback()
@@ -325,11 +381,28 @@ def update_employee(
         exclude_unset=True
     )
 
-    return repository.update_employee(
+    updated = repository.update_employee(
         db,
         employee,
         update_data,
     )
+
+    try:
+        log_audit_event(
+            actor_user_id=None,
+            action="Employee updated",
+            module="EMPLOYEE",
+            entity_type="EMPLOYEE",
+            entity_id=updated.id,
+            employee_id=updated.id,
+            description=f"Updated employee {updated.first_name} {updated.last_name} ({updated.employee_code})",
+            new_value=list(update_data.keys()),
+            db=db,
+        )
+    except Exception as e:
+        print(f"[WARNING] Could not log audit for employee update: {e}")
+
+    return updated
 
 
 # ============================================================
@@ -346,6 +419,8 @@ def update_employee_status(
         db,
         employee_id,
     )
+
+    old_status = employee.employment_status.value if hasattr(employee.employment_status, "value") else str(employee.employment_status)
 
     employee = repository.update_employee_status(
         db,
@@ -365,6 +440,23 @@ def update_employee_status(
 
     db.commit()
     db.refresh(employee)
+
+    new_status = employee.employment_status.value if hasattr(employee.employment_status, "value") else str(employee.employment_status)
+    try:
+        log_audit_event(
+            actor_user_id=None,
+            action="Employee status updated",
+            module="EMPLOYEE",
+            entity_type="EMPLOYEE",
+            entity_id=employee.id,
+            employee_id=employee.id,
+            description=f"Status changed from {old_status} to {new_status} for {employee.employee_code}",
+            old_value=old_status,
+            new_value=new_status,
+            db=db,
+        )
+    except Exception as e:
+        print(f"[WARNING] Could not log audit for employee status update: {e}")
 
     return employee
 
@@ -393,6 +485,21 @@ def activate_employee(
     db.commit()
     db.refresh(employee)
 
+    try:
+        log_audit_event(
+            actor_user_id=None,
+            action="Employee activated",
+            module="EMPLOYEE",
+            entity_type="EMPLOYEE",
+            entity_id=employee.id,
+            employee_id=employee.id,
+            description=f"Activated employee {employee.first_name} {employee.last_name} ({employee.employee_code})",
+            new_value="ACTIVE",
+            db=db,
+        )
+    except Exception as e:
+        print(f"[WARNING] Could not log audit for employee activation: {e}")
+
     return employee
 
 
@@ -420,6 +527,21 @@ def deactivate_employee(
     db.commit()
     db.refresh(employee)
 
+    try:
+        log_audit_event(
+            actor_user_id=None,
+            action="Employee deactivated",
+            module="EMPLOYEE",
+            entity_type="EMPLOYEE",
+            entity_id=employee.id,
+            employee_id=employee.id,
+            description=f"Deactivated employee {employee.first_name} {employee.last_name} ({employee.employee_code})",
+            new_value="INACTIVE",
+            db=db,
+        )
+    except Exception as e:
+        print(f"[WARNING] Could not log audit for employee deactivation: {e}")
+
     return employee
 
 
@@ -430,6 +552,7 @@ def deactivate_employee(
 def archive_employee(
     db: Session,
     employee_id: int,
+    user_id: int | None = None,
 ) -> Employee:
 
     employee = get_employee_by_id(
@@ -445,12 +568,27 @@ def archive_employee(
         EmploymentStatus.INACTIVE
     )
 
-    employee.user.is_active = False
+    if employee.user:
+        employee.user.is_active = False
 
     employee.updated_at = now
 
     db.commit()
     db.refresh(employee)
+
+    try:
+        log_audit_event(
+            actor_user_id=user_id,
+            action="Employee removed",
+            module="EMPLOYEE",
+            entity_type="EMPLOYEE",
+            entity_id=employee.id,
+            employee_id=employee.id,
+            description=f"Removed employee {employee.first_name} {employee.last_name} ({employee.employee_code})",
+            db=db,
+        )
+    except Exception as e:
+        print(f"[WARNING] Could not log audit for employee removal: {e}")
 
     return employee
 
@@ -474,11 +612,19 @@ def update_self_profile(
         exclude_unset=True
     )
 
-    return repository.update_employee(
+    updated = repository.update_employee(
         db,
         employee,
         update_data,
     )
+
+    # Sync User full_name if first_name or last_name changed
+    if "first_name" in update_data or "last_name" in update_data:
+        employee.user.full_name = f"{employee.first_name} {employee.last_name}".strip()
+        db.commit()
+        db.refresh(employee)
+
+    return updated
 
 
 # ============================================================
